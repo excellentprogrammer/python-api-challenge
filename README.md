@@ -112,14 +112,15 @@ which you will consume.
 
 Otherwise, the rest is up to you!
 
-### Implementation
+# Implementation
 
 ## pre-steps
 `python3 manage.py makemigrations`
+
 `python3 manage.py migrate`
 
 ## loding fixtures
-in `departures/urls.py`
+in `departures/urls.py`,
 `urlpatterns = [
     url(r'^load-fixtures', views.load_fixtures, name="load_fixtures"), ## add one more endpoint to load fixtures
     url(r'^', DepartureView.as_view()),
@@ -127,7 +128,7 @@ in `departures/urls.py`
 ]`
 
 in `depatures/views.py`, added new view which is to load fixtures
-`import json
+```import json
 
 def load_fixtures(request):
     with open('departures.json') as json_data:
@@ -138,7 +139,7 @@ def load_fixtures(request):
                 Departure(name=departure["name"], start_date=departure["start_date"], finish_date=departure["finish_date"],category=departure["category"]).save()
                 number_of_new_departure += 1
     return HttpResponse( "%d new departures successfully inserted" % (number_of_new_departure))
-`
+```
 in `script.py`,
 ```
 def load_fixtures():
@@ -149,11 +150,12 @@ def load_fixtures():
         print("Server is not running. Please try later.")
 
 ```
-So you can upload fixtures either by running script.py or going to link 'http://localhost:8000/departures/load-fixtures' on your local
+So you can load fixtures either by running script.py or going to link 'http://localhost:8000/departures/load-fixtures' on your local
 
 ## Data Collection Script
 Filename: `script.py`
-#collecting data
+
+### data collection from local API
 ```
 def collect_data(request_url):
     departures = []
@@ -166,7 +168,7 @@ def collect_data(request_url):
         print("Server is not running. Please try later.")
     return departures
 ```
-#filtering data
+## filtering data
 - define filters
 ```
 def date_filter(departure):                                                  # start_date filter definition
@@ -180,11 +182,11 @@ def category_filter(departure):                                              # c
 departures = list(filter(date_filter, departures))
 departures = list(filter(category_filter, departures))
 ```
-# writing to a CSV file
+## writing to a CSV file
 CSV file name:`filtered_departures.csv`
 ```
 def write_to_csv(departures, filename):
-    if len(departures)==0:                                                    #check if there is departures to write.
+    if len(departures)==0:                                                    #check if there are departures to write.
         print("There is nothing to write.")
         return
 
