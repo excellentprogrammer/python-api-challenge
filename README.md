@@ -111,3 +111,101 @@ We've included a basic Django project and a `Departure` model with some fields,
 which you will consume.
 
 Otherwise, the rest is up to you!
+
+### Implementation
+
+## pre-steps
+`python3 manage.py makemigrations`
+`python3 manage.py migrate`
+
+## loding fixtures
+in `departures/urls.py`
+`urlpatterns = [
+    url(r'^load-fixtures', views.load_fixtures, name="load_fixtures"), ## add one more endpoint to load fixtures
+    url(r'^', DepartureView.as_view()),
+
+]`
+
+in `depatures/views.py`, added new view which is to load fixtures
+`import json
+
+def load_fixtures(request):
+    with open('departures.json') as json_data:
+        departure_fixtures = json.load(json_data)
+        number_of_new_departure = 0;
+        for departure in departure_fixtures:
+            if Departure.objects.filter(name=departure["name"], start_date=departure["start_date"], finish_date=departure["finish_date"], category=departure["category"]).count()==0:
+                Departure(name=departure["name"], start_date=departure["start_date"], finish_date=departure["finish_date"],category=departure["category"]).save()
+                number_of_new_departure += 1
+    return HttpResponse( "%d new departures successfully inserted" % (number_of_new_departure))
+`
+in `script.py`,
+```
+def load_fixtures():
+    try:
+        response = requests.get('http://localhost:8000/departures/load-fixtures')    # request to load the dpatures.json to db.
+        print(response.text)
+    except requests.ConnectionError as e:
+        print("Server is not running. Please try later.")
+
+```
+So you can upload fixtures either by running script.py or going to link 'http://localhost:8000/departures/load-fixtures' on your local
+
+## Data Collection Script
+Filename: `script.py`
+#collecting data
+```
+def collect_data(request_url):
+    departures = []
+    try:
+        response = requests.get(request_url).json()                            # get all the departures by iteration of requests to next url
+        while response["next"]:
+            departures += response["results"]
+            response = requests.get(response["next"]).json()
+    except requests.ConnectionError as e:
+        print("Server is not running. Please try later.")
+    return departures
+```
+#filtering data
+- define filters
+```
+def date_filter(departure):                                                  # start_date filter definition
+    return departure["start_date"] > "2018-06-01"
+
+def category_filter(departure):                                              # category filter definition
+    return departure["category"] == "Adventurous"
+```
+- apply filters
+```
+departures = list(filter(date_filter, departures))
+departures = list(filter(category_filter, departures))
+```
+# writing to a CSV file
+CSV file name:`filtered_departures.csv`
+```
+def write_to_csv(departures, filename):
+    if len(departures)==0:                                                    #check if there is departures to write.
+        print("There is nothing to write.")
+        return
+
+    with open(filename,"w") as output:                                        #writing to csv
+        columns = []
+        column_titles = []
+
+        for column in departures[0]:                                          #retriving columns
+            if column!="id":
+                columns.append(column)
+                column_titles.append(column.title())
+
+        output.write(', '.join(column_titles))
+        output.write('\n')
+                                                                                # writing rows to the csv
+        for departure in departures:
+            row = []
+            for column in columns:
+                row.append(departure[column])
+
+            output.write(', '.join(row))
+            output.write('\n')
+
+  ```       
