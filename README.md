@@ -121,12 +121,13 @@ Otherwise, the rest is up to you!
 
 ## loding fixtures
 in `departures/urls.py`,
-`urlpatterns = [
-    url(r'^load-fixtures', views.load_fixtures, name="load_fixtures"), ## add one more endpoint to load fixtures
+```
+urlpatterns = [
+    url(r'^load-fixtures', views.load_fixtures, name="load_fixtures"),               # add one more endpoint to load fixtures
     url(r'^', DepartureView.as_view()),
 
-]`
-
+]
+```
 in `depatures/views.py`, added new view which is to load fixtures
 ```import json
 
