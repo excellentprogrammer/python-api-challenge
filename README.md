@@ -169,7 +169,7 @@ def collect_data(request_url):
         print("Server is not running. Please try later.")
     return departures
 ```
-## filtering data
+### filtering data
 - define filters
 ```
 def date_filter(departure):                                                  # start_date filter definition
@@ -183,7 +183,7 @@ def category_filter(departure):                                              # c
 departures = list(filter(date_filter, departures))
 departures = list(filter(category_filter, departures))
 ```
-## writing to a CSV file
+### writing to a CSV file
 CSV file name:`filtered_departures.csv`
 ```
 def write_to_csv(departures, filename):
